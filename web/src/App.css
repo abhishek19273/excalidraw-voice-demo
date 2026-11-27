@@ -1,0 +1,241 @@
+:root {
+  --ink: #1b1b1f;
+  --muted: #6b6b76;
+  --edge: #e4e4ea;
+  --paper: #fcfcfd;
+  --user: #0f7b5a;
+  --bot: #5750d6;
+  --drew: #a8620a;
+
+  font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--paper);
+}
+
+#root {
+  display: contents;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--edge);
+  background: #fff;
+}
+
+h1 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.board {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── the talking indicator ─────────────────────────────────────────────── */
+
+.voicebar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.4rem;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: #fff;
+  /* The whole bar picks up the colour of whoever has the floor, which is the
+     cue you can read from across a room; --glow stays off until someone talks. */
+  --accent: var(--muted);
+  --glow: transparent;
+  box-shadow: 0 0 0 4px var(--glow);
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.voicebar[data-who="user"] {
+  --accent: var(--user);
+  --glow: color-mix(in srgb, var(--user) 14%, transparent);
+  border-color: color-mix(in srgb, var(--user) 45%, var(--edge));
+}
+
+.voicebar[data-who="bot"] {
+  --accent: var(--bot);
+  --glow: color-mix(in srgb, var(--bot) 16%, transparent);
+  border-color: color-mix(in srgb, var(--bot) 45%, var(--edge));
+}
+
+.talk {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.talk:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.talk .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8a8a95;
+}
+
+.talk[data-live="true"] .dot {
+  background: #e5484d;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+}
+
+.meter span {
+  display: block;
+  width: 5px;
+  height: 30px;
+  border-radius: 3px;
+  background: var(--accent);
+  opacity: 0.85;
+  transform: scaleY(0.12);
+  transition:
+    transform 0.08s linear,
+    background 0.25s ease;
+}
+
+.status {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent);
+  min-width: 15ch;
+  max-width: 44ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter span,
+  .talk[data-live="true"] .dot {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ── the transcript ────────────────────────────────────────────────────── */
+
+.transcript {
+  width: 22rem;
+  flex: none;
+  border-left: 1px solid var(--edge);
+  background: #fff;
+  overflow-y: auto;
+  padding: 1rem 1.1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.transcript .empty {
+  color: var(--muted);
+  margin: 0;
+}
+
+.transcript .empty em {
+  color: var(--ink);
+  font-style: normal;
+  background: #f2f2f5;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 3.4rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.row .who {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--muted);
+}
+
+.row.user .who {
+  color: var(--user);
+}
+
+.row.assistant .who {
+  color: var(--bot);
+}
+
+.row .bubble {
+  border-radius: 10px;
+  padding: 0.35rem 0.6rem;
+  background: #f4f4f7;
+}
+
+.row.assistant .bubble {
+  background: color-mix(in srgb, var(--bot) 8%, #fff);
+}
+
+/* An unfinished turn is still arriving word by word — say so quietly. */
+.row.said[data-final="false"] .bubble {
+  opacity: 0.7;
+}
+
+.chip {
+  justify-self: start;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--drew);
+  background: color-mix(in srgb, var(--drew) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--drew) 25%, #fff);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+}
